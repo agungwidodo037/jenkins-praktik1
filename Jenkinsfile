@@ -6,24 +6,16 @@ pipeline {
     }
 
     stages {
-        stage('Verify Docker') {
-            steps {
-                sh 'docker --version'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh 'pip install -r requirements.txt'
             }
         }
-
         stage('Run Test') {
             steps {
                 sh 'pytest test_app.py'
             }
         }
-
         stage('Deploy') {
             when {
                 anyOf {
@@ -41,7 +33,7 @@ pipeline {
         success {
             script {
                 def payload = [
-                    content: "✅ Build SUCCESS on `${env.BRANCH_NAME}`\nURL: ${env.BUILD_URL}"
+                    content: "✅ Build SUCCESS on ${env.BRANCH_NAME}\nURL: ${env.BUILD_URL}"
                 ]
 
                 httpRequest(
@@ -56,7 +48,7 @@ pipeline {
         failure {
             script {
                 def payload = [
-                    content: "❌ Build FAILED on `${env.BRANCH_NAME}`\nURL: ${env.BUILD_URL}"
+                    content: "❌ Build FAILED on ${env.BRANCH_NAME}\nURL: ${env.BUILD_URL}"
                 ]
 
                 httpRequest(
