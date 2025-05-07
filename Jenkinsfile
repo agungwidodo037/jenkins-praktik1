@@ -5,15 +5,27 @@ pipeline {
         }
     }
 
+    environment {
+        VENV = 'venv'
+    }
+
     stages {
-        stage('Install Dependencies') {
+        stage('Setup Environment & Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                    python -m venv $VENV
+                    . $VENV/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
         stage('Run Test') {
             steps {
-                sh 'pytest test_app.py'
+                sh '''
+                    . $VENV/bin/activate
+                    pytest test_app.py
+                '''
             }
         }
         stage('Deploy') {
@@ -33,7 +45,7 @@ pipeline {
         success {
             script {
                 def payload = [
-                    content: "✅ Build SUCCESS on ${env.BRANCH_NAME}\nURL: ${env.BUILD_URL}"
+                    content: "✅ Build SUCCESS on `${env.BRANCH_NAME}`\nURL: ${env.BUILD_URL}"
                 ]
 
                 httpRequest(
@@ -48,7 +60,7 @@ pipeline {
         failure {
             script {
                 def payload = [
-                    content: "❌ Build FAILED on ${env.BRANCH_NAME}\nURL: ${env.BUILD_URL}"
+                    content: "❌ Build FAILED on `${env.BRANCH_NAME}`\nURL: ${env.BUILD_URL}"
                 ]
 
                 httpRequest(
